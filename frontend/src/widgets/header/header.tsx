@@ -2,7 +2,11 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 
 import { Container } from '../../shared/ui/container/container';
 
-export const Header = () => {
+interface Props {
+    onOrderClick: () => void;
+}
+
+export const Header = ({ onOrderClick }: Props) => {
     return (
         <Box
             sx={{
@@ -39,7 +43,9 @@ export const Header = () => {
                         <Button color="inherit">О нас</Button>
                         <Button color="inherit">Контакты</Button>
 
-                        <Button variant="contained">Заказать</Button>
+                        <Button variant="contained" onClick={onOrderClick}>
+                            Заказать
+                        </Button>
                     </Stack>
                 </Stack>
             </Container>

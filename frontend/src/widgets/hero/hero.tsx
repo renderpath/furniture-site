@@ -2,7 +2,11 @@ import { Box, Button, Stack, Typography } from '@mui/material';
 
 import { Container } from '../../shared/ui/container/container';
 
-export const Hero = () => {
+interface Props {
+    onOrderClick: () => void;
+}
+
+export const Hero = ({ onOrderClick }: Props) => {
     return (
         <Box
             sx={{
@@ -38,7 +42,7 @@ export const Hero = () => {
                     </Typography>
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                        <Button variant="contained" size="large">
+                        <Button variant="contained" size="large" onClick={onOrderClick}>
                             Рассчитать проект
                         </Button>
 
