@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export interface Order {
     id: number;
     name: string;
@@ -10,11 +12,26 @@ export interface Order {
     created_at: string;
 }
 
-export const getOrders = async () => {
+export const loginAdmin = async (
+    login: string,
+    password: string
+) => {
+    const response = await axios.post(
+        `${API_URL}/api/admin/login`,
+        {
+            login,
+            password,
+        }
+    );
+
+    return response.data;
+};
+
+export const getOrders = async (): Promise<Order[]> => {
     const token = localStorage.getItem('admin_token');
 
     const response = await axios.get(
-        'http://localhost:5001/api/admin/orders',
+        `${API_URL}/api/admin/orders`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -22,17 +39,17 @@ export const getOrders = async () => {
         }
     );
 
-    return response.data.orders as Order[];
+    return response.data.orders;
 };
 
 export const updateOrderStatus = async (
-    id: number,
+    orderId: number,
     status: string
 ) => {
     const token = localStorage.getItem('admin_token');
 
     const response = await axios.patch(
-        `http://localhost:5001/api/admin/orders/${id}/status`,
+        `${API_URL}/api/admin/orders/${orderId}`,
         {
             status,
         },
@@ -46,11 +63,13 @@ export const updateOrderStatus = async (
     return response.data;
 };
 
-export const deleteOrder = async (id: number) => {
+export const deleteOrder = async (
+    orderId: number
+) => {
     const token = localStorage.getItem('admin_token');
 
     const response = await axios.delete(
-        `http://localhost:5001/api/admin/orders/${id}`,
+        `${API_URL}/api/admin/orders/${orderId}`,
         {
             headers: {
                 Authorization: `Bearer ${token}`,
