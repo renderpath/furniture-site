@@ -1,4 +1,10 @@
-import { Box, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import {
+    Box,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import { OrderForm } from '../../features/order-form/order-form';
@@ -6,16 +12,18 @@ import { OrderForm } from '../../features/order-form/order-form';
 interface Props {
     open: boolean;
     onClose: () => void;
+    defaultComment?: string;
+    defaultCategory?: string;
 }
 
-export const OrderModal = ({ open, onClose }: Props) => {
+export const OrderModal = ({
+                               open,
+                               onClose,
+                               defaultComment = '',
+                               defaultCategory = '',
+                           }: Props) => {
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            fullWidth
-            maxWidth="sm"
-        >
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>
                 Оставить заявку
 
@@ -33,7 +41,10 @@ export const OrderModal = ({ open, onClose }: Props) => {
 
             <DialogContent>
                 <Box sx={{ pt: 1 }}>
-                    <OrderForm />
+                    <OrderForm
+                        defaultComment={defaultComment}
+                        defaultCategory={defaultCategory}
+                    />
                 </Box>
             </DialogContent>
         </Dialog>

@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { db } from './db';
+import jwt from 'jsonwebtoken';
+import { adminCredentials } from './config/admin';
+import { authMiddleware } from './middleware/auth';
 
 dotenv.config();
 
@@ -63,7 +66,7 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
-app.get('/api/admin/orders', async (_, res) => {
+app.get('/api/admin/orders', authMiddleware , async (_, res) => {
     try {
         const result = await db.query(`
       SELECT *
@@ -84,6 +87,106 @@ app.get('/api/admin/orders', async (_, res) => {
         });
     }
 });
+
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { login, password } = req.body;
+
+        if (
+            login !== adminCredentials.login ||
+            password !== adminCredentials.password
+        ) {
+            return res.status(401).json({
+                success: false,
+                message: 'Неверный логин или пароль',
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                role: 'admin',
+            },
+            process.env.JWT_SECRET as string,
+            {
+                expiresIn: '7d',
+            }
+        );
+
+        return res.json({
+            success: true,
+            token,
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Ошибка сервера',
+        });
+    }
+});
+
+app.patch(
+    '/api/admin/orders/:id/status',
+    authMiddleware,
+    async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            const result = await db.query(
+                `
+        UPDATE orders
+        SET status = $1
+        WHERE id = $2
+        RETURNING *
+        `,
+                [status, id]
+            );
+
+            return res.json({
+                success: true,
+                order: result.rows[0],
+            });
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                success: false,
+                message: 'Ошибка сервера',
+            });
+        }
+    }
+);
+
+app.delete(
+    '/api/admin/orders/:id',
+    authMiddleware,
+    async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            await db.query(
+                `
+        DELETE FROM orders
+        WHERE id = $1
+        `,
+                [id]
+            );
+
+            return res.json({
+                success: true,
+            });
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                success: false,
+                message: 'Ошибка сервера',
+            });
+        }
+    }
+);
 
 const PORT = process.env.PORT || 5001;
 
