@@ -49,7 +49,7 @@ export const updateOrderStatus = async (
     const token = localStorage.getItem('admin_token');
 
     const response = await axios.patch(
-        `${API_URL}/api/admin/orders/${orderId}`,
+        `${API_URL}/api/admin/orders/${orderId}/status`,
         {
             status,
         },
@@ -63,9 +63,7 @@ export const updateOrderStatus = async (
     return response.data;
 };
 
-export const deleteOrder = async (
-    orderId: number
-) => {
+export const deleteOrder = async (orderId: number) => {
     const token = localStorage.getItem('admin_token');
 
     const response = await axios.delete(
