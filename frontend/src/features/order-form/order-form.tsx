@@ -1,27 +1,43 @@
-import { Button, MenuItem, Stack, TextField } from '@mui/material';
+import { useState } from 'react';
+import { Alert, Button, MenuItem, Stack, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 
-interface OrderFormData {
-    name: string;
-    phone: string;
-    category: string;
-    comment: string;
-}
+import { createOrder, type OrderFormData } from '../../shared/api/orders';
 
 export const OrderForm = () => {
+    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
     const { register, handleSubmit, reset } = useForm<OrderFormData>();
 
-    const onSubmit = (data: OrderFormData) => {
-        console.log('Заявка:', data);
-        reset();
+    const onSubmit = async (data: OrderFormData) => {
+        try {
+            setSuccessMessage('');
+            setErrorMessage('');
+
+            await createOrder(data);
+
+            setSuccessMessage('Заявка успешно отправлена');
+            reset();
+        } catch {
+            setErrorMessage('Не удалось отправить заявку. Попробуйте позже.');
+        }
     };
 
     return (
-        <Stack
-            component="form"
-            spacing={2}
-            onSubmit={handleSubmit(onSubmit)}
-        >
+        <Stack component="form" spacing={2} onSubmit={handleSubmit(onSubmit)}>
+            {successMessage && (
+                <Alert severity="success">
+                    {successMessage}
+                </Alert>
+            )}
+
+            {errorMessage && (
+                <Alert severity="error">
+                    {errorMessage}
+                </Alert>
+            )}
+
             <TextField
                 label="Ваше имя"
                 fullWidth

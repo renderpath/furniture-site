@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { db } from './db';
 
 dotenv.config();
 
@@ -22,32 +23,66 @@ app.get('/', (_, res) => {
     });
 });
 
-app.post('/api/orders', (req, res) => {
-    const { name, phone, category, comment } = req.body as OrderRequestBody;
+app.post('/api/orders', async (req, res) => {
+    try {
+        const { name, phone, category, comment } =
+            req.body as OrderRequestBody;
 
-    if (!name || !phone || !category) {
-        return res.status(400).json({
-            success: false,
-            message: 'Заполните имя, телефон и категорию',
-        });
-    }
+        if (!name || !phone || !category) {
+            return res.status(400).json({
+                success: false,
+                message: 'Заполните обязательные поля',
+            });
+        }
 
-    const order = {
-        id: Date.now(),
+        const result = await db.query(
+            `
+      INSERT INTO orders (
         name,
         phone,
         category,
-        comment: comment || '',
-        status: 'new',
-        createdAt: new Date().toISOString(),
-    };
+        comment
+      )
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+      `,
+            [name, phone, category, comment || '']
+        );
 
-    console.log('Новая заявка:', order);
+        return res.status(201).json({
+            success: true,
+            order: result.rows[0],
+        });
+    } catch (error) {
+        console.error(error);
 
-    return res.status(201).json({
-        success: true,
-        order,
-    });
+        return res.status(500).json({
+            success: false,
+            message: 'Ошибка сервера',
+        });
+    }
+});
+
+app.get('/api/admin/orders', async (_, res) => {
+    try {
+        const result = await db.query(`
+      SELECT *
+      FROM orders
+      ORDER BY created_at DESC
+    `);
+
+        return res.json({
+            success: true,
+            orders: result.rows,
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Ошибка сервера',
+        });
+    }
 });
 
 const PORT = process.env.PORT || 5001;
